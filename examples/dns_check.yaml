@@ -1,0 +1,27 @@
+metrics:
+  # Check if DNS resolution works for multiple domains
+  dns_resolution:
+    name: "dns_resolution_status"
+    type: "gauge"
+    help: "DNS resolution status (1=success, 0=failure)"
+    collector:
+      type: "returncode_mapping"
+      command: "nslookup google.com"
+      mapping:
+        "0": 1
+        "default": 0
+      labels:
+        domain: "google.com"
+        type: "public"
+
+  dns_resolution_internal:
+    name: "dns_resolution_status"
+    type: "gauge"
+    help: "DNS resolution status (1=success, 0=failure)"
+    collector:
+      type: "returncode"
+      command: "nslookup internal.example.com"
+      labels:
+        domain: "internal.example.com"
+        type: "internal"
+

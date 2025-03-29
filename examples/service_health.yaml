@@ -1,0 +1,21 @@
+metrics:
+  # Use string mapping for service state
+  service_state:
+    name: "service_state_code"
+    type: "gauge"
+    help: "Service state (0=stopped, 1=running, 2=failed, 3=starting, 4=stopping)"
+    collector:
+      type: "output_parse"
+      command: "systemctl status tftpd-hpa | grep 'Active:' | awk '{print $2}'"
+      parse:
+        pattern: "(\\w+)"
+        index: 1
+        string_map:
+          "active": 1
+          "inactive": 0
+          "failed": 2
+          "activating": 3
+          "deactivating": 4
+        default_value: -1  # Unknown state
+      labels:
+        service: "tftpd-hpa"
