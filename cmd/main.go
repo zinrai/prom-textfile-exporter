@@ -43,7 +43,7 @@ func runCommand(args []string) {
 	runFlags := flag.NewFlagSet("run", flag.ExitOnError)
 
 	configFile := runFlags.String("config", "./config.yaml", "Path to configuration file")
-	outputDir := runFlags.String("output-dir", "/tmp", "Output directory")
+	outputDir := runFlags.String("output-dir", "", "Output directory (if not specified, output to stdout)")
 	timeoutSec := runFlags.Int("timeout", 10, "Command execution timeout in seconds")
 
 	runFlags.Usage = func() {
@@ -89,11 +89,6 @@ func runExecute(configFile, outputDir string, timeoutSec int) {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	err = os.MkdirAll(outputDir, 0755)
-	if err != nil {
-		log.Fatalf("Failed to create output directory: %v", err)
-	}
-
 	metrics := []collector.Metric{}
 	hasErrors := false
 	hasWarnings := false
@@ -122,7 +117,6 @@ func runExecute(configFile, outputDir string, timeoutSec int) {
 				hasErrors = true
 			}
 		} else if result.MetricValid {
-			// エラーなしで有効なメトリクス
 			metrics = append(metrics, result.Metric)
 		}
 	}
@@ -131,13 +125,25 @@ func runExecute(configFile, outputDir string, timeoutSec int) {
 		log.Fatalf("No metrics were collected")
 	}
 
-	outputFile := filepath.Join(outputDir, "prom_textfile_exporter.prom")
-	err = writer.WriteMetrics(metrics, outputFile)
-	if err != nil {
-		log.Fatalf("Failed to write metrics to file: %v", err)
+	if outputDir == "" {
+		// Output to stdout
+		if err := writer.WriteMetricsToStdout(metrics); err != nil {
+			log.Fatalf("Failed to write metrics to stdout: %v", err)
+		}
+	} else {
+		// Output to file with atomic write
+		if err := os.MkdirAll(outputDir, 0755); err != nil {
+			log.Fatalf("Failed to create output directory: %v", err)
+		}
+
+		outputFile := filepath.Join(outputDir, "prom_textfile_exporter.prom")
+		if err := writer.WriteMetricsToFile(metrics, outputFile); err != nil {
+			log.Fatalf("Failed to write metrics to file: %v", err)
+		}
+
+		log.Printf("Successfully wrote %d metrics to %s", len(metrics), outputFile)
 	}
 
-	log.Printf("Successfully wrote %d metrics to %s", len(metrics), outputFile)
 	if hasWarnings {
 		log.Printf("Some warnings occurred during collection, but metrics were still generated")
 	}

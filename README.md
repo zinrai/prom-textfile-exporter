@@ -21,7 +21,11 @@ $ go build -o prom-textfile-exporter cmd/main.go
 ### Basic Usage
 
 ```bash
-$ prom-textfile-exporter run --config /path/to/config.yaml
+# Output to stdout
+$ prom-textfile-exporter run -config /path/to/config.yaml
+
+# Output to file (atomic write)
+$ prom-textfile-exporter run -config /path/to/config.yaml -output-dir /var/lib/node_exporter
 ```
 
 ### Command-line Options
@@ -34,12 +38,12 @@ Commands:
   validate  Validate configuration file
 
 Command Options (run):
-  --config <path>       Path to configuration file (default: ./config.yaml)
-  --output-dir <path>   Output directory (default: /tmp)
-  --timeout <seconds>   Command execution timeout in seconds (default: 10)
+  -config <path>       Path to configuration file (default: ./config.yaml)
+  -output-dir <path>   Output directory (if not specified, output to stdout)
+  -timeout <seconds>   Command execution timeout in seconds (default: 10)
 
 Command Options (validate):
-  --config <path>       Path to configuration file (default: ./config.yaml)
+ -config <path>       Path to configuration file (default: ./config.yaml)
 ```
 
 ## Configuration
@@ -56,7 +60,7 @@ To use with the Node Exporter's textfile collector:
 Example cron job:
 
 ```
-*/5 * * * * /usr/local/bin/prom-textfile-exporter run --config /etc/prom-textfile-exporter/config.yaml
+*/5 * * * * /usr/local/bin/prom-textfile-exporter run -config /etc/prom-textfile-exporter/config.yaml -output-dir /var/lib/node_exporter
 ```
 
 ## Error Handling

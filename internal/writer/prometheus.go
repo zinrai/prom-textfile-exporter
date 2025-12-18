@@ -9,12 +9,10 @@ import (
 	"github.com/zinrai/prom-textfile-exporter/internal/collector"
 )
 
-// writes metrics in Prometheus format to a file
-func WriteMetrics(metrics []collector.Metric, outputFile string) error {
-	// Build string builder for the content
+// formatMetrics formats metrics in Prometheus format
+func formatMetrics(metrics []collector.Metric) string {
 	var sb strings.Builder
 
-	// Process each metric
 	uniqueMetrics := make(map[string]bool)
 
 	for _, metric := range metrics {
@@ -39,6 +37,20 @@ func WriteMetrics(metrics []collector.Metric, outputFile string) error {
 		fmt.Fprintf(&sb, "%s%s %g\n", metric.Name, labelsStr, metric.Value)
 	}
 
+	return sb.String()
+}
+
+// WriteMetricsToStdout writes metrics in Prometheus format to stdout
+func WriteMetricsToStdout(metrics []collector.Metric) error {
+	content := formatMetrics(metrics)
+	_, err := fmt.Print(content)
+	return err
+}
+
+// WriteMetricsToFile writes metrics in Prometheus format to a file with atomic write
+func WriteMetricsToFile(metrics []collector.Metric, outputFile string) error {
+	content := formatMetrics(metrics)
+
 	// Create a temporary file
 	dir := filepath.Dir(outputFile)
 	tmpfile, err := os.CreateTemp(dir, "metrics.*.prom")
@@ -55,7 +67,7 @@ func WriteMetrics(metrics []collector.Metric, outputFile string) error {
 	}()
 
 	// Write content to temporary file
-	if _, err := tmpfile.WriteString(sb.String()); err != nil {
+	if _, err := tmpfile.WriteString(content); err != nil {
 		return fmt.Errorf("failed to write to temporary file: %w", err)
 	}
 
