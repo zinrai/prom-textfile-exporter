@@ -5,7 +5,7 @@ import (
 	"os"
 	"regexp"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 // loads and validates the configuration from a file
