@@ -10,12 +10,6 @@ A tool for generating Prometheus metrics for the Node Exporter textfile collecto
 2. **Return code mapping** - Map exit codes to specific metric values
 3. **Output parsing** - Extract values from command output using regular expressions
 
-## Installation
-
-```bash
-$ go build -o prom-textfile-exporter cmd/main.go
-```
-
 ## Usage
 
 ### Basic Usage
