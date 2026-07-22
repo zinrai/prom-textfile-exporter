@@ -12,6 +12,16 @@ import (
 	"github.com/zinrai/prom-textfile-exporter/internal/writer"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
+func printVersion() {
+	fmt.Printf("prom-textfile-exporter %s (commit %s, built %s)\n", version, commit, date)
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: prom-textfile-exporter <command> [command options]")
@@ -29,6 +39,8 @@ func main() {
 		runCommand(os.Args[2:])
 	case "validate":
 		validateCommand(os.Args[2:])
+	case "version":
+		printVersion()
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		fmt.Println("Usage: prom-textfile-exporter <command> [command options]")
